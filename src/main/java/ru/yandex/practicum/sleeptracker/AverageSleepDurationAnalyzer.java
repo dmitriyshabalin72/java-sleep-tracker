@@ -9,33 +9,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AverageSleepDurationAnalyzer
-        implements SleepAnalyzer {
+public class AverageSleepDurationAnalyzer implements SleepAnalyzer {
 
     @Override
-    public SleepAnalysisResult<Long> analyze(
-            List<SleepingSession> sessions) {
-
+    public SleepAnalysisResult<Long> analyze(List<SleepingSession> sessions) {
         return new SleepAnalysisResult<>(
                 "Средняя длительность",
                 Math.round(
                         sessions.stream()
-                                .mapToLong(
-                                        SleepingSession::duration
-                                )
+                                .mapToLong(SleepingSession::duration)
                                 .average()
                                 .orElse(0)
                 )
         );
     }
 
-    public static class SessionsCountAnalyzer
-            implements SleepAnalyzer {
+    public static class SessionsCountAnalyzer implements SleepAnalyzer {
 
         @Override
-        public SleepAnalysisResult<Long> analyze(
-                List<SleepingSession> sessions) {
-
+        public SleepAnalysisResult<Long> analyze(List<SleepingSession> sessions) {
             return new SleepAnalysisResult<>(
                     "Количество сессий",
                     (long) sessions.size()
@@ -46,13 +38,9 @@ public class AverageSleepDurationAnalyzer
     public static class SleepTrackerApp {
 
         private static final DateTimeFormatter FORMAT =
-                DateTimeFormatter.ofPattern(
-                        "dd.MM.yy HH:mm"
-                );
+                DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
-        private static final List<SleepAnalyzer>
-                ANALYZERS = List.of(
-
+        private static final List<SleepAnalyzer> ANALYZERS = List.of(
                 new SessionsCountAnalyzer(),
                 new MinSleepDurationAnalyzer(),
                 new MaxSleepDurationAnalyzer(),
@@ -65,50 +53,30 @@ public class AverageSleepDurationAnalyzer
         public static void main(String[] args) {
 
             if (args.length == 0) {
-
-                System.out.println(
-                        "Укажите путь к файлу"
-                );
-
+                System.out.println("Укажите путь к файлу");
                 return;
             }
 
-            try (Stream<String> lines =
-                         Files.lines(Path.of(args[0]))) {
+            try (Stream<String> lines = Files.lines(Path.of(args[0]))) {
 
-                List<SleepingSession> sessions =
-                        lines
-                                .filter(line ->
-                                        !line.isBlank()
-                                )
-                                .map(
-                                        SleepTrackerApp
-                                                ::parse
-                                )
-                                .collect(Collectors.toList());
+                List<SleepingSession> sessions = lines
+                        .filter(line -> !line.isBlank())
+                        .map(SleepTrackerApp::parse)
+                        .collect(Collectors.toList());
 
                 ANALYZERS.stream()
-                        .map(a ->
-                                a.analyze(sessions)
-                        )
+                        .map(analyzer -> analyzer.analyze(sessions))
                         .forEach(System.out::println);
 
             } catch (IOException e) {
-
-                System.out.println(
-                        "Ошибка файла"
-                );
+                System.out.println("Ошибка файла");
 
             } catch (Exception e) {
-
-                System.out.println(
-                        "Ошибка данных"
-                );
+                System.out.println("Ошибка данных");
             }
         }
 
-        private static SleepingSession parse(
-                String line) {
+        private static SleepingSession parse(String line) {
 
             String[] p = line.split(";");
 
@@ -117,17 +85,8 @@ public class AverageSleepDurationAnalyzer
             }
 
             return new SleepingSession(
-
-                    LocalDateTime.parse(
-                            p[0],
-                            FORMAT
-                    ),
-
-                    LocalDateTime.parse(
-                            p[1],
-                            FORMAT
-                    ),
-
+                    LocalDateTime.parse(p[0], FORMAT),
+                    LocalDateTime.parse(p[1], FORMAT),
                     SleepQuality.valueOf(p[2])
             );
         }
